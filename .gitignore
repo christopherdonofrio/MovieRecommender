@@ -1,1 +1,10 @@
+# macOS
 .DS_Store
+
+# Python
+__pycache__/
+*.pyc
+backend/venv/
+
+# Uploaded CSVs
+data/uploads/
