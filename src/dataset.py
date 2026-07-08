@@ -1,28 +1,26 @@
-# Dataset and DataLoad, break dataframes into batches
 import torch
-import torchvision
-import numpy as np
 from torch.utils.data import Dataset
-import math
+
+# Dataset and DataLoad, break dataframes into batches
 
 # create tensors of all userids, movieids, and ratings
-class ratingsDataset(Dataset):
+class RatingsDataset(Dataset):
 
     def __init__(self, dataframe):
-        #data loading
+        # data loading
         self.users = torch.tensor(
             dataframe["user_idx"].values,
-            dtype=torch.long
+            dtype=torch.long,
         )
 
         self.movies = torch.tensor(
             dataframe["movie_idx"].values,
-            dtype=torch.long
+            dtype=torch.long,
         )
 
         self.ratings = torch.tensor(
             dataframe["ratingCentered"].values,
-            dtype=torch.float32
+            dtype=torch.float32,
         )
 
     def __getitem__(self, index):
@@ -30,4 +28,3 @@ class ratingsDataset(Dataset):
 
     def __len__(self):
         return len(self.ratings)
-    
