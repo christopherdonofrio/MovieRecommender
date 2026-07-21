@@ -1,4 +1,4 @@
-from processData import loadAndCleanData
+from processData import load_and_clean_data
 from dataset import RatingsDataset
 from model import MovieRecommender
 
@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 
 
-train_df, test_df, ratings, movies, global_mean, num_users, num_movies = loadAndCleanData()
+train_df, test_df, ratings, movies, global_mean, num_users, num_movies = load_and_clean_data()
 
 test_dataset = RatingsDataset(test_df)
 test_data_loader = DataLoader(
