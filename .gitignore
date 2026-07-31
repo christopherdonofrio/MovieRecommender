@@ -8,3 +8,6 @@ backend/venv/
 
 # Uploaded CSVs
 data/uploads/
+
+# Raw datasets (too large for git)
+data/raw/
