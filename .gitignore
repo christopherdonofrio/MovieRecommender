@@ -9,5 +9,10 @@ backend/venv/
 # Uploaded CSVs
 data/uploads/
 
-# Raw datasets (too large for git)
+# Raw datasets and their cleaned/derived versions (too large for git,
+# regenerate with src/processData.py)
 data/raw/
+data/processed/
+
+# Trained model checkpoints (too large for git, regenerate with src/train.py)
+models/*.pt

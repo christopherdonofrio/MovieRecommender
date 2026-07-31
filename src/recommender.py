@@ -9,6 +9,7 @@ from helpers import (
     normalize_match_title,
 )
 from model import MovieRecommender
+from content_features import build_movie_content_matrix
 
 
 torch.manual_seed(42)
@@ -16,8 +17,9 @@ torch.manual_seed(42)
 # import cleaned ratings and movie csvs for matching
 ratings = pd.read_csv("../data/processed/ratings_clean.csv")
 movie_lens = pd.read_csv("../data/processed/movies_clean.csv")
+tags_df = pd.read_csv("../data/raw/tags.csv")
 
-# match movies on release year and alternative titles
+# match movies on release year and alternative titles (helper fcts)
 movie_lens["matchYear"] = movie_lens["title"].apply(extract_movie_year)
 movie_lens["matchVariants"] = movie_lens["title"].apply(get_movie_title_variants)
 
@@ -25,11 +27,17 @@ global_mean = ratings["rating"].mean()
 num_users = ratings["user_idx"].nunique()
 num_movies = ratings["movie_idx"].nunique()
 
+content_vocab, movie_content_matrix = build_movie_content_matrix(movie_lens, tags_df)
+assert len(content_vocab) == 320, (
+    f"expected 20 genres + 300 tags = 320 content features, got {len(content_vocab)} "
+    "-- underlying data or top_k_tags likely changed"
+)
+
 
 def load_model():
-    # Load the trained collaborative filtering model.
+    # Load the trained collaborative filtering model
 
-    model = MovieRecommender(num_users, num_movies, global_mean)
+    model = MovieRecommender(num_users, num_movies, global_mean, movie_content_matrix)
     model.load_state_dict(
         torch.load("../models/movieRecommenderModel.pt", map_location="cpu")
     )
@@ -66,7 +74,7 @@ def load_user_data(file_path):
     return my_ratings
 
 # Match a Letterboxd movie to the correct MovieLens movie index.
-# Prefer an exact release year match and allow a one-year difference to account for dataset inconsistencies.
+# Prefer an exact release year match and allow a one-year difference to account for dataset inconsistencie.
 def find_movielens_movie(user_title, user_year):
     user_key = normalize_match_title(user_title)
 
@@ -139,25 +147,31 @@ def get_recommendations(file_path, top_n=10):
         dtype=torch.float32,
     )
 
-    embedding_dim = model.user_embeddings.embedding_dim
+    num_content_features = model.movie_content_matrix.shape[1]
 
-    temp_user_embedding = torch.nn.Parameter(torch.randn(embedding_dim))
+    # content dims are meaningful (genres/tags), so the fit starts
+    # at the population-average prediction and only changes as it learns this specific user's real preferences.
+    temp_user_content_affinity = torch.nn.Parameter(torch.zeros(num_content_features))
     temp_user_bias = torch.nn.Parameter(torch.zeros(1))
 
-     # Optimize the temporary user embedding so it reproduces the user's known ratings
+     # Optimize the temporary user content affinity so it reproduces the user's known ratings.
+     # Strong weight_decay here: with 320 free parameters fit from typically only a few
+     # hundred ratings (or fewer), this is far more underdetermined than the main training
+     # run (25M+ ratings) without real regularization it overfits to noise instead of learning genuine genre/tag preference 
     optimizer = torch.optim.Adam(
-        [temp_user_embedding, temp_user_bias],
+        [temp_user_content_affinity, temp_user_bias],
         lr=0.01,
+        weight_decay=1e-2,
     )
 
     loss_fn = nn.MSELoss()
 
     for _ in range(300):
-        movie_vectors = model.movie_embeddings(my_movie_tensor)
+        movie_content_vectors = model.movie_content_matrix[my_movie_tensor]
         movie_biases = model.movie_biases(my_movie_tensor).squeeze()
 
         predictions = (
-            (movie_vectors * temp_user_embedding).sum(dim=1)
+            (movie_content_vectors * temp_user_content_affinity).sum(dim=1)
             + movie_biases
             + temp_user_bias
         )
@@ -173,11 +187,11 @@ def get_recommendations(file_path, top_n=10):
 
     # predict ratings for every movie the user has not rated
     with torch.no_grad():
-        unseen_movie_vectors = model.movie_embeddings(unwatched_movie_tensor)
+        unseen_movie_content_vectors = model.movie_content_matrix[unwatched_movie_tensor]
         unseen_movie_biases = model.movie_biases(unwatched_movie_tensor).squeeze()
 
         unseen_predictions = (
-            (unseen_movie_vectors * temp_user_embedding).sum(dim=1)
+            (unseen_movie_content_vectors * temp_user_content_affinity).sum(dim=1)
             + unseen_movie_biases
             + temp_user_bias
         )

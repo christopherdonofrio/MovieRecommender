@@ -2,13 +2,10 @@ import torch.nn as nn
 
 
 class MovieRecommender(nn.Module):
-    def __init__(self, num_users, num_movies, global_mean, embedding_dim=3):
+    def __init__(self, num_users, num_movies, global_mean, movie_content_matrix):
         super().__init__()
 
-        # create table of num_users/movies * dimension
-        # each unique user and movie gets a vector of size 3
-        self.user_embeddings = nn.Embedding(num_users, embedding_dim)
-        self.movie_embeddings = nn.Embedding(num_movies, embedding_dim)
+        num_content_features = movie_content_matrix.shape[1]
 
         self.user_biases = nn.Embedding(num_users, 1)
         self.movie_biases = nn.Embedding(num_movies, 1)
@@ -16,26 +13,23 @@ class MovieRecommender(nn.Module):
         nn.init.zeros_(self.user_biases.weight)
         nn.init.zeros_(self.movie_biases.weight)
 
+        # Trainable user affinity instead of genre+tag content features,
+        # replacing the old arbitrary user embeddings
+        self.user_content_affinity = nn.Embedding(num_users, num_content_features)
+        nn.init.zeros_(self.user_content_affinity.weight)
+
+        # Fixed, non-trainable per-movie content vector. persistent=False
+        # keeps it out of the checkpoint since it's easy to rebuild from
+        # movies_clean.csv/tags.csv.
+        self.register_buffer("movie_content_matrix", movie_content_matrix, persistent=False)
+
     def forward(self, users, movies):
-        # users is a tensor of 256 shuffled users
-        # movies is a tensor of 256 shuffled movies
-        # where user[0] matches movie[0], and ratings[0]
-        # is user[0]'s rating of movie[0]
-
-        # vectors of batch size * dimension
-        # 256 users, each with a unique vector of 3 numbers
-        user_vecs = self.user_embeddings(users)
-        movie_vecs = self.movie_embeddings(movies)
-
-        # dot product user and movie vectors and add them,
-        # creating a prediction value
         user_bias = self.user_biases(users).squeeze()
         movie_bias = self.movie_biases(movies).squeeze()
 
-        # create raw score of dot product of
-        # user and movie vectors + biases
-        raw_scores = (user_vecs * movie_vecs).sum(dim=1)
+        user_content_vecs = self.user_content_affinity(users)
+        movie_content_vecs = self.movie_content_matrix[movies]
 
-        predictions = raw_scores + user_bias + movie_bias
+        content_score = (user_content_vecs * movie_content_vecs).sum(dim=1)
 
-        return predictions
+        return user_bias + movie_bias + content_score
