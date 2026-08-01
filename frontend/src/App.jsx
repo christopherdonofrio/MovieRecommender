@@ -19,24 +19,31 @@ function App() {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    const response = await fetch(`${API_URL}/recommend`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    setMessage(data.message);
-    setRecommendations(data.recommendations || []);
-    
-    setTimeout(() => {
-      recommendationsRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
+    try {
+      const response = await fetch(`${API_URL}/recommend`, {
+        method: "POST",
+        body: formData,
       });
-    }, 100);
 
+      if (!response.ok) {
+        setMessage(`Request failed (${response.status}). Please try again.`);
+        return;
+      }
 
+      const data = await response.json();
+
+      setMessage(data.message);
+      setRecommendations(data.recommendations || []);
+
+      setTimeout(() => {
+        recommendationsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        });
+      }, 100);
+    } catch (error) {
+      setMessage("Couldn't reach the server. Please try again.");
+    }
   }
 
   return (
