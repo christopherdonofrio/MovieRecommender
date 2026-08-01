@@ -128,7 +128,15 @@ ul {
   grid-column: 1 / -1;
   width: 100%;
   padding: 15px 0 15px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 .header h1 {
@@ -136,6 +144,19 @@ ul {
   font-size: clamp(40px, 5vw, 64px);
   line-height: 1.1;
   white-space: nowrap;
+}
+
+.header-link {
+  color: #b1bac4;
+  font-size: 19px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.header-link:hover {
+  color: #40bcf4;
 }
 
 
@@ -326,22 +347,3 @@ a {
   padding-bottom: 30px;
 }
 
-.site-footer {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  padding: 32px 0 8px;
-}
-
-.site-footer a {
-  color: #b1bac4;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.site-footer a:hover {
-  color: #40bcf4;
-}

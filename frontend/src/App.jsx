@@ -42,7 +42,25 @@ function App() {
   return (
   <main className="recommender-layout">
     <div className="header">
+        <a
+          className="header-link"
+          href="https://github.com/christopherdonofrio/MovieRecommender"
+          target="_blank"
+          rel="noreferrer"
+        >
+          GitHub
+        </a>
+
         <h1>Letterboxd Movie Recommender</h1>
+
+        <a
+          className="header-link"
+          href="https://www.linkedin.com/in/christopher-donofrio7705/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          LinkedIn
+        </a>
 
     </div>
 
@@ -152,23 +170,6 @@ function App() {
             </ol>
           </div>
         )}
-
-    <footer className="site-footer">
-      <a
-        href="https://github.com/christopherdonofrio/MovieRecommender"
-        target="_blank"
-        rel="noreferrer"
-      >
-        GitHub
-      </a>
-      <a
-        href="https://www.linkedin.com/in/christopher-donofrio7705/"
-        target="_blank"
-        rel="noreferrer"
-      >
-        LinkedIn
-      </a>
-    </footer>
 
   </main>
 );
