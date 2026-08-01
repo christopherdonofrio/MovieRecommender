@@ -1,5 +1,7 @@
 # Movie Recommender Model Using PyTorch
 
+[View Live Demo][https://your-live-url-here.com](https://movie-recommender-donorf1.vercel.app)
+
 ## Overview
 
 This is a movie recommender project that uses PyTorch to predict a user's rating for an unwatched movie on a 5-star scale using collaborative filtering trained on the MovieLens dataset. A user exports their Letterboxd ratings as a CSV file, uploads it through the frontend, and the backend finds matching ratings with MovieLens, fits a personalized model of that user's taste, and returns the highest-predicted-rated unwatched movies (usually top 10).
