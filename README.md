@@ -1,6 +1,6 @@
 # Movie Recommender Model Using PyTorch
 
-[View Live Demo][https://your-live-url-here.com](https://movie-recommender-donorf1.vercel.app)
+[View Live Demo](https://movie-recommender-donorf1.vercel.app)
 
 ## Overview
 
