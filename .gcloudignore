@@ -1,0 +1,16 @@
+.git/
+.gitignore
+
+frontend/node_modules/
+frontend/dist/
+
+data/raw/
+data/processed/
+data/uploads/
+models/*.pt
+
+testCSVs/
+__pycache__/
+*.pyc
+backend/venv/
+.DS_Store
