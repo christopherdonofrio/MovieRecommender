@@ -5,16 +5,20 @@ import os
 import sys
 from pathlib import Path
 
-# reroute to /src folder as that is where model and recommender file are stored
+# reroute to /src folder 
 sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
 
 from recommender import get_recommendations
 
 app = FastAPI()
 
+# Comma-separated list of allowed origins
+# Defaults to the local Vite dev server so local dev is unaffected.
+allowed_origins = os.environ.get("ALLOWED_ORIGIN", "http://localhost:5173").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

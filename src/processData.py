@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -57,5 +59,17 @@ def load_and_clean_data():
 
     num_users = ratings["user_idx"].nunique()
     num_movies = ratings["movie_idx"].nunique()
+
+    # Cache these small scalars separately so the serving path (recommender.py)
+    # doesn't need to load the entire ratings CSV just to read three numbers off it.
+    with open("../data/processed/meta.json", "w") as f:
+        json.dump(
+            {
+                "global_mean": global_mean,
+                "num_users": int(num_users),
+                "num_movies": int(num_movies),
+            },
+            f,
+        )
 
     return train_df, test_df, ratings, movies, global_mean, num_users, num_movies

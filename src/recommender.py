@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -14,8 +16,9 @@ from content_features import build_movie_content_matrix
 
 torch.manual_seed(42)
 
-# import cleaned ratings and movie csvs for matching
-ratings = pd.read_csv("../data/processed/ratings_clean.csv")
+# import cleaned movies csv for matching (ratings_clean.csv is not loaded here
+# it's multi-GB at full dataset scale, and everything this module needs from it
+# is the 3 scalars cached in meta.json by processData.py)
 movie_lens = pd.read_csv("../data/processed/movies_clean.csv")
 tags_df = pd.read_csv("../data/raw/tags.csv")
 
@@ -23,9 +26,12 @@ tags_df = pd.read_csv("../data/raw/tags.csv")
 movie_lens["matchYear"] = movie_lens["title"].apply(extract_movie_year)
 movie_lens["matchVariants"] = movie_lens["title"].apply(get_movie_title_variants)
 
-global_mean = ratings["rating"].mean()
-num_users = ratings["user_idx"].nunique()
-num_movies = ratings["movie_idx"].nunique()
+with open("../data/processed/meta.json") as f:
+    _meta = json.load(f)
+
+global_mean = _meta["global_mean"]
+num_users = _meta["num_users"]
+num_movies = _meta["num_movies"]
 
 content_vocab, movie_content_matrix = build_movie_content_matrix(movie_lens, tags_df)
 assert len(content_vocab) == 320, (

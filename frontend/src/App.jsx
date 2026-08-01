@@ -1,5 +1,9 @@
 import { useState, useRef } from "react";
 
+// Set VITE_API_URL in production 
+// at the deployed backend. Falls back to the local dev server otherwise.
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
@@ -15,7 +19,7 @@ function App() {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    const response = await fetch("http://127.0.0.1:8000/recommend", {
+    const response = await fetch(`${API_URL}/recommend`, {
       method: "POST",
       body: formData,
     });

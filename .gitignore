@@ -16,3 +16,6 @@ data/processed/
 
 # Trained model checkpoints (too large for git, regenerate with src/train.py)
 models/*.pt
+
+# Personal test data, not needed to run the app
+testCSVs/
