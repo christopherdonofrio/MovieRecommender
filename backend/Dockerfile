@@ -22,4 +22,6 @@ COPY src/ src/
 EXPOSE 8000
 
 WORKDIR /app/backend
-CMD ["sh", "-c", "python fetch_artifacts.py && uvicorn main:app --host 0.0.0.0 --port 8000"]
+# Cloud Run injects a PORT env var and requires the container to listen on it;
+# ${PORT:-8000} keeps 8000 as the default for local/Render use where PORT isn't set.
+CMD ["sh", "-c", "python fetch_artifacts.py && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
